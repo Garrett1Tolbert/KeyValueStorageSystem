@@ -16,7 +16,6 @@ from __future__ import print_function
 # descriptions because those can skip the archaic bits. (The API was released
 # more than 35 years ago!)
 import socket
-
 import time
 
 # Read this many bytes at a time of a command. Each socket holds a buffer of
@@ -27,18 +26,23 @@ COMMAND_BUFFER_SIZE = 256
 
 
 def CreateServerSocket(port):
-  """Creates a socket that listens on a specified port.
-
-  Args:
-    port: int from 0 to 2^16. Low numbered ports have defined purposes. Almost
-        all predefined ports represent insecure protocols that have died out.
-  Returns:
-    An socket that implements TCP/IP.
-  """
+# Creates a socket that listens on a specified port.
+#
+# Args:
+# port: int from 0 to 2^16. Low numbered ports have defined purposes. Almost
+#     all predefined ports represent insecure protocols that have died out.
+# Returns:
+# An socket that implements TCP/IP.
 
     #############################################
     #TODO: Implement CreateServerSocket Function
     #############################################
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(('', port))
+    print("Listening to server...")
+    s.listen(10)
+
+    return s
 
 def ConnectClientToServer(server_sock):
     # Wait until a client connects and then get a socket that connects to the
@@ -48,24 +52,34 @@ def ConnectClientToServer(server_sock):
     #############################################
     #TODO: Implement CreateClientSocket Function
     #############################################
-
-
+    conn, (address, port) = server_sock.accept()
+    return conn, (address, port)
 
 
 def CreateClientSocket(server_addr, port):
-  """Creates a socket that connects to a port on a server."""
+  # Creates a socket that connects to a port on a server.
 
     #############################################
     #TODO: Implement CreateClientSocket Function
     #############################################
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((server_addr, port))
 
+    return s
 
 def ReadCommand(sock):
-  """Read a single command from a socket. The command must end in newline."""
+  # """Read a single command from a socket. The command must end in newline."""
 
     #############################################
     #TODO: Implement ReadCommand Function
     #############################################
+    command = ''
+
+    # read command from server and return it. Stop if last character is a new line
+    while not command or command[-1] != '\n':
+        command += sock.recv(COMMAND_BUFFER_SIZE)
+
+    return command.strip()
 
 
 
@@ -96,60 +110,64 @@ def ParseCommand(command):
   return command, arg1, remainder
 
 class KeyValueStore(object):
-  """A dictionary of strings keyed by strings.
+    # """A dictionary of strings keyed by strings.
+    #
+    # The values can time out once they get sufficiently old. Otherwise, this
+    # acts much like a dictionary.
+    # """
 
-  The values can time out once they get sufficiently old. Otherwise, this
-  acts much like a dictionary.
-  """
+    def __init__(self):
 
-  def __init__(self):
+        ###########################################
+        #TODO: Implement __init__ Function
+        ###########################################
+        self.datastore = {}
 
-    ###########################################
-    #TODO: Implement __init__ Function
-    ###########################################
-    self.datastore = {}
+    def GetValue(self, key, max_age_in_sec=None):
+        # """Gets a cached value or `None`.
+        #
+        # Values older than `max_age_in_sec` seconds are not returned.
+        #
+        # Args:
+        #   key: string. The name of the key to get.
+        #   max_age_in_sec: float. Maximum time since the value was placed in the
+        #     KeyValueStore. If not specified then values do not time out.
+        # Returns:
+        #   None or the value.
+        # """
+        # Check if we've ever put something in the cache.
 
-  def GetValue(self, key, max_age_in_sec=None):
-    """Gets a cached value or `None`.
+        ###########################################
+        #TODO: Implement GetValue Function
+        ###########################################
+        for name in self.datastore:
+          if name == key: #and .age <= max_age_in_sec
+              return self.datastore[name]
 
-    Values older than `max_age_in_sec` seconds are not returned.
-
-    Args:
-      key: string. The name of the key to get.
-      max_age_in_sec: float. Maximum time since the value was placed in the
-        KeyValueStore. If not specified then values do not time out.
-    Returns:
-      None or the value.
-    """
-    # Check if we've ever put something in the cache.
-
-    ###########################################
-    #TODO: Implement GetValue Function
-    ###########################################
-
-
-
-  def StoreValue(self, key, value):
-    """Stores a value under a specific key.
-
-    Args:
-      key: string. The name of the value to store.
-      value: string. A value to store.
-    """
-
-    ###########################################
-    #TODO: Implement StoreValue Function
-    ###########################################
-    self.datastore[key] = value
+        return None
 
 
-  def Keys(self):
-    """Returns a list of all keys in the datastore."""
-    self.listKeys = []
-    ###########################################
-    #TODO: Implement Keys Function
-    ###########################################
-    for key in self.datastore:
-        self.listKeys.append(key)
+    def StoreValue(self, key, value):
+        """Stores a value under a specific key.
 
-    return self.listKeys
+        Args:
+          key: string. The name of the value to store.
+          value: string. A value to store.
+        """
+
+        ###########################################
+        #TODO: Implement StoreValue Function
+        ###########################################
+        self.datastore[key] = value
+
+
+    def Keys(self):
+        """Returns a list of all keys in the datastore."""
+        self.listKeys = []
+        ###########################################
+        #TODO: Implement Keys Function
+        ###########################################
+        for key in self.datastore:
+            self.listKeys.append(key)
+
+        return self.listKeys

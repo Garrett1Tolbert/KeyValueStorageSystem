@@ -29,7 +29,7 @@ SERVER_PORT = 7777
 LISTENING_PORT = 8888
 
 # Cache values retrieved from the server for this long.
-MAX_CACHE_AGE_SEC = 60.0  # 1 minute
+MAX_CACHE_AGE_SEC = 5.0  # 1 minute
 
 
 def ForwardCommandToServer(command, server_addr, server_port):
@@ -114,10 +114,11 @@ def ProxyClientCommand(sock, server_addr, server_port, cache):
     # if true(when isCache is None), it will get data from server and send it
     if isCache is None:
         cmd, name, text = library.ParseCommand(command)
-        print("isCache is None...Looking to server")
         data = ForwardCommandToServer(command,server_addr,server_port)
         if cmd == "GET":
             cache.datastore[name] = (data,time.time())
+            print("Added name: " + name + " to cache")
+
     sock.sendall(data)
     #
     #     # parse data from server to get key/value

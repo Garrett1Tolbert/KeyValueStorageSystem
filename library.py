@@ -151,6 +151,12 @@ class KeyValueStore(object):
 
 
         if key in self.datastore:
+            # check if time is greater than max age
+            if self.datastore[key][1] >= max_age_in_sec: #if so, delete it
+                print("Value is older than its time limit(60s): " + str(newTime-self.datastore[key][1]))
+                del self.datastore[key]
+                print("Value has been deleted from cache")
+                return None
             return self.datastore[key][0]
 
 

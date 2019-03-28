@@ -15,6 +15,8 @@ from __future__ import division
 from __future__ import print_function
 
 import library
+import socket
+import time
 
 # Where to find the server. This assumes it's running on the smae machine
 # as the proxy, but on a different port.
@@ -46,8 +48,10 @@ def ForwardCommandToServer(command, server_addr, server_port):
     ###################################################
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((server_addr, server_port))
-    s.sendall(b'Hello, world')
-    data = s.recv(1024)
+    s.sendall(command)
+    data = s.recv(256)
+
+    return data
 
 
 def CheckCachedResponse(command_line, cache):
@@ -57,14 +61,26 @@ def CheckCachedResponse(command_line, cache):
     ##########################
     #TODO: Implement section
     ##########################
+    # if cmd == "PUT":
+    #     cache.StoreValue(name,text)
 
     # GET commands can be cached.
-
     ############################
     #TODO: Implement section
     ############################
 
+    if cmd == "GET":
+        # return None
+        # print("Checking cache for GET command")
+        #
+        if name in cache.datastore:
+            print("Name is in cache")
+            return cache.GetValue(name,MAX_CACHE_AGE_SEC)
+        else:
+            print("Name is NOT in cache")
+            return None
 
+    # return None
 
 def ProxyClientCommand(sock, server_addr, server_port, cache):
 # """Receives a command from a client and forwards it to a server:port.
@@ -85,9 +101,35 @@ def ProxyClientCommand(sock, server_addr, server_port, cache):
     ###########################################
     #TODO: Implement ProxyClientCommand
     ###########################################
+    command = ""
+    data = ""
+    while not command or command[-1] != '\n':
+        command += sock.recv(256)
 
 
+    # check to see if command is in proxy cache
+    # if it is, isCache will return None or a command(data)
+    isCache = CheckCachedResponse(command,cache)
+    print(isCache)
+    # if true(when isCache is None), it will get data from server and send it
+    if isCache is None:
+        cmd, name, text = library.ParseCommand(command)
+        print("isCache is None...Looking to server")
+        data = ForwardCommandToServer(command,server_addr,server_port)
+        if cmd == "GET":
+            cache.datastore[name] = (data,time.time())
+    sock.sendall(data)
+    #
+    #     # parse data from server to get key/value
+    #     cmd, name, text = library.ParseCommand(data)
+    #     # update cache with data from server
+    #     cache.StoreValue(name, text)
+    # else:
+    #     print("Found value in cache...")
+    #     sock.sendall(isCache)
 
+    # close the client socket
+    sock.close()
 
 def main():
     # Listen on a specified port...
@@ -95,12 +137,12 @@ def main():
     cache = library.KeyValueStore()
     # Accept incoming commands indefinitely.
     while True:
-    # Wait until a client connects and then get a socket that connects to the
-    # client.
-    client_sock, (address, port) = library.ConnectClientToServer(server_sock)
-    print('Received connection from %s:%d' % (address, port))
-    ProxyClientCommand(client_sock, SERVER_ADDRESS, SERVER_PORT,
-                       cache)
+        # Wait until a client connects and then get a socket that connects to the
+        # client.
+        client_sock, (address, port) = library.ConnectClientToServer(server_sock)
+        print('TEST:Received connection from %s:%d' % (address, port))
+        ProxyClientCommand(client_sock, SERVER_ADDRESS, SERVER_PORT,
+                           cache)
 
     #################################
     #TODO: Close socket's connection

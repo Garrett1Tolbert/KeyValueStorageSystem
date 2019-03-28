@@ -41,7 +41,6 @@ import library
 # The port that we accept connections on. (A.k.a. "listen" on.)
 LISTENING_PORT = 7777
 
-
 def PutCommand(name, text, database):
     # Handle the PUT command for a server.
     #
@@ -60,11 +59,11 @@ def PutCommand(name, text, database):
     ##########################################
     #TODO: Implement PUT function
     ##########################################
-    database.datastore[name] = text
-    return database.datastore[name]
+    database.StoreValue(name, text)
+    print("Added name: " + name + " to server")
+    return text
 
 def GetCommand(name, database):
-    proxy_dict = {}
     # Handle the GET command for a server.
     #
     # GET takes a single argument: the name of the key to look up.
@@ -79,18 +78,9 @@ def GetCommand(name, database):
     ##########################################
     #TODO: Implement GET function
     ##########################################
-    # proxy_variables_accessed = proxy.main()
-
-    #if server has made request to this key already, grab it from proxy
-    if name in proxy_dict:
-        print("Extracting value from proxy cache...")
-        return proxy_dict[name]
-    else:   #first time calling get on this key
-      if name in database.datastore:
-          # add name to proxy cache
-          proxy_dict[name] = database.datastore[name]
-          print("Extracting value from datastore...")
-          return database.datastore[name]
+    if name in database.datastore:
+      print("Getting value from server...")
+      return database.datastore[name][0]
 
 
 def DumpCommand(database):
@@ -109,7 +99,7 @@ def DumpCommand(database):
     #TODO: Implement DUMP function
     ##########################################
     for key in database.datastore:
-      result += key + ", " + database.datastore[key] + "\n"
+        result += key + ", " + database.datastore[key][0] + "\n"
 
     return result
 

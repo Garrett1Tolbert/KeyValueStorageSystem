@@ -24,7 +24,6 @@ import time
 # will be shorter than this.
 COMMAND_BUFFER_SIZE = 256
 
-
 def CreateServerSocket(port):
 # Creates a socket that listens on a specified port.
 #
@@ -140,9 +139,20 @@ class KeyValueStore(object):
         ###########################################
         #TODO: Implement GetValue Function
         ###########################################
-        for name in self.datastore:
-          if name == key: #and .age <= max_age_in_sec
-              return self.datastore[name]
+        newTime = time.time()
+
+        # for name in self.datastore:
+        #     print(self.datastore[name][1])
+        #     print()
+        #     time_diff = newTime - self.datastore[name][1]
+        #     if self.datastore[name][0] == key and time_diff <= max_age_in_sec:
+        #         print("Last accessed " + str(time_diff) + " seconds ago")
+        #         return self.datastore[name][0]
+
+
+        if key in self.datastore:
+            return self.datastore[key][0]
+
 
         return None
 
@@ -158,7 +168,8 @@ class KeyValueStore(object):
         ###########################################
         #TODO: Implement StoreValue Function
         ###########################################
-        self.datastore[key] = value
+        # stores value and current time it's being added
+        self.datastore[key] = (value, time.time())
 
 
     def Keys(self):
